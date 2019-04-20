@@ -25,7 +25,7 @@ export default {
         ajax({
             url: '/user',
         }).then((res) => {
-            console.log(res);
+            // console.log(res);
             this.data = res.data;
         });
     }

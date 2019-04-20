@@ -1,7 +1,7 @@
 <template>
     <Layout id="app">
         <Sider breakpoint="md" collapsible :collapsed-width="78" v-model="isCollapsed">
-            <Menu active-name="home" theme="dark" width="auto" :class="menuitemClasses" @on-select="select">
+            <Menu :active-name="activeMenu" theme="dark" width="auto" :class="menuitemClasses" @on-select="select">
                 <div class="big-title">Manager</div>
                 <MenuItem name="home" >
                     <Icon type="ios-navigate"></Icon>
@@ -20,9 +20,11 @@
         </Sider>
         <Layout>
             <Header class="layout-header-bar">
-                <slot />
+                <Breadcrumb>
+                    <BreadcrumbItem v-for="(item, index) in $route.meta.bread" :key="index" :to="item.to" >{{ item.content }}</BreadcrumbItem>
+                </Breadcrumb>
             </Header>
-            <Content :style="{margin: '20px', background: '#fff', minHeight: '220px'}">
+            <Content :style="{margin: '20px', background: '#fff', minHeight: '220px', marginTop: '85px'}">
                 <router-view></router-view>
             </Content>
         </Layout>
@@ -36,6 +38,7 @@ export default {
     data () {
         return {
             isCollapsed: false,
+            activeMenu: 'home',
         };
     },
     computed: {
@@ -44,13 +47,24 @@ export default {
                 'menu-item',
                 this.isCollapsed ? 'collapsed-menu' : ''
             ]
-        }
+        },
     },
     methods: {
         select(item) {
-            console.log(item);
+            // console.log(item);
             this.$router.push({name: item});
         },
+    },
+    watch: {
+        $route: function(newValue, oldValue) {
+            console.log(newValue, oldValue);
+            // console.log('this: ', this);
+            this.activeMenu = newValue.name;
+        },
+    },
+    created() {
+        // watch&created => 保证面包屑&路径的 正确匹配
+        this.activeMenu = this.$route.name;
     },
     components: {
 
@@ -72,6 +86,9 @@ export default {
             text-align: center;
         }
         .layout-header-bar{
+            z-index: 100;
+            width: 100%;
+            position: fixed;
             background: #fff;
             box-shadow: 0 1px 1px rgba(0,0,0,.1);
         }

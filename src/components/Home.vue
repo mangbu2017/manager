@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1>shangkexin</h1>
+        <h1>免费阅读app后台数据管理系统</h1>
     </div>
 </template>
 <script>
