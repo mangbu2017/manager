@@ -3,7 +3,9 @@
         <Card class="control-card">
             <span :style="{ marginRight: '10px',}">章节数: {{this.chapterNums}} (存库) / {{this.data.chapters.length}} (总数)</span>
             <i-button type="primary" @click="getChapterList" :style="{ marginRight: '10px',}">爬取(更新)章节列表</i-button>
-            <i-button type="primary" @click="getChapters">爬取选中章节</i-button>
+            <i-button type="primary" @click="getChapters" :style="{ marginRight: '10px',}" :disabled="fetchingCp">爬取选中章节</i-button>
+            <i-button type="primary" @click="getAllChapters" :style="{ marginRight: '10px', }" :disabled="fetchingCp">爬取所有章节</i-button>
+            <i-button type="warning" @click="toggleFetch" :style="{ marginRight: '10px', }" :disabled="!fetchingCp">暂停</i-button>
             <div class="percent">
                 <Progress :percent="percent" />
             </div>
@@ -110,13 +112,15 @@ export default {
                     ]);
                 }
             }],
-            data: [],
+            data: {},
             fetch: false,
             current: 1,
             pageSize: 12,
             split: 0.5,
             selectArr: [],
             failreqs: [],
+            // 一开始没有 fetchingCp
+            fetchingCp: false,
         }
     },
     computed: {
@@ -204,6 +208,10 @@ export default {
         selectAll(a) {
             this.selectArr = a;
         },
+        toggleFetch() {
+            this.fetchingCp = false;
+            this.$Message.info('已暂停章节内容爬取');
+        },
         getCp(index) {
             const promise = axios({
                 method: 'get',
@@ -225,6 +233,12 @@ export default {
 
             return promise;
         },
+        getAllChapters() {
+            this.selectArr = this.data.chapters.filter(item => {
+                return !item.content;
+            });
+            this.getChapters();
+        },
         getChapters() {
             const select = this.selectArr,
                   len = select.length,
@@ -234,7 +248,7 @@ export default {
 
             console.log('select: ', select);
 
-            function fn() {
+            const fn = () => {
                 console.log('current: ', current);
                 const arr = [];
 
@@ -253,13 +267,18 @@ export default {
 
                     if(current < len) {
                         current += 5;
-                        fn();
+                        // 是fetching状态才能 继续执行
+                        if(this.fetchingCp) {
+                            fn();
+                        }
                     }
                 });
             }
 
             
             fn();
+            // 开始fetching了
+            this.fetchingCp = true;
         },
         selectChange(a, b) {
             console.log('selectChange:', a, b)
